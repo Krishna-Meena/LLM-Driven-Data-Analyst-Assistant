@@ -67,7 +67,6 @@ module = [
     "pandas.*",
     "plotly.*",
     "duckdb.*",
-    "openpyxl.*",
     "fpdf.*",
     "pyarrow.*",
 ]

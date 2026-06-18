@@ -1,236 +1,176 @@
-# 📊 Local LLM Data Analyst
+# 📊 Local Data Analyst
 
 <div align="center">
 
-[![CI Pipeline](https://github.com/Krishna-Meena/LLM-Driven-Data-Analyst-Assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Krishna-Meena/LLM-Driven-Data-Analyst-Assistant/actions)
-[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
-[![Linting & Formatting](https://img.shields.io/badge/code%20quality-Ruff-orange.svg)](https://github.com/astral-sh/ruff)
-[![Type Checked](https://img.shields.io/badge/type%20checked-MyPy-green.svg)](https://github.com/python/mypy)
-[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
-[![Ollama](https://img.shields.io/badge/LLM-Ollama%20Local-blueviolet.svg)](https://ollama.com/)
+[![CI](https://github.com/Krishna-Meena/LLM-Driven-Data-Analyst-Assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Krishna-Meena/LLM-Driven-Data-Analyst-Assistant/actions)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
+[![Ruff](https://img.shields.io/badge/code%20style-Ruff-orange.svg)](https://github.com/astral-sh/ruff)
+[![MyPy](https://img.shields.io/badge/type%20checked-MyPy-green.svg)](https://github.com/python/mypy)
+[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
+[![Ollama](https://img.shields.io/badge/LLM-Ollama-blueviolet.svg)](https://ollama.com/)
 
-**A production-grade, recruiter-ready local AI data analyst workspace.**
+A locally-hosted data analysis workspace powered by LLMs.
 
-*Automated data profiling • Natural language SQL • Interactive charting • Executive summaries*
-
-*100% local inference via Ollama — zero API costs, total data privacy.*
+Automated profiling · Natural language SQL · Interactive charts · Executive reports
 
 </div>
 
 ---
 
-## 🎯 Overview
+## Overview
 
-Local LLM Data Analyst is a full-stack data analysis workspace that runs entirely on your machine. Upload datasets, ask questions in plain English, generate interactive visualizations, and compile executive briefings — all powered by local LLMs through Ollama with DuckDB as the in-memory SQL engine.
+Upload datasets, query them in plain English, generate interactive visualizations, and export executive briefs — all running locally on your machine via [Ollama](https://ollama.com/) and [DuckDB](https://duckdb.org/).
 
-Built as a **portfolio capstone project** for B.Sc Data Science graduates targeting roles in:
-
-- 🔬 Data Analyst / Analytics Engineer
-- 🤖 AI Engineer / LLM Engineer
-- 📊 Junior Data Scientist
+**No API keys. No cloud dependencies. Complete data privacy.**
 
 ---
 
-## 🖼️ Screenshots
-
-> Add screenshots to the `assets/` directory and update the paths below.
-
-<!-- Uncomment when screenshots are available:
-![Dashboard](assets/dashboard.png)
-![SQL Studio](assets/sql_studio.png)
-![Insights](assets/insights.png)
--->
-
-*Screenshots will be added after deployment.*
-
----
-
-## 🚀 Key Features
+## Features
 
 | Feature | Description |
 |---|---|
-| **📂 Smart Ingestion** | Upload CSV, XLSX, XLS, and Parquet files with automatic schema detection |
-| **📊 Auto Profiling** | Row/column shapes, data types, missing values, duplicates, memory usage, IQR outliers |
-| **🔍 NL-to-SQL Studio** | Plain English → optimized DuckDB SQL → execution → executive explanation |
-| **📈 Visual Advisor** | Plotly charts (bar, line, scatter, histogram, heatmap, pie) with dark-mode themes |
-| **🤖 AI Chat** | Context-aware conversations with sliding-window turn-level memory |
-| **💡 Executive Insights** | Automated trends, anomalies, patterns, and strategic recommendations |
-| **📥 Report Generator** | Export briefings to Markdown, styled HTML, or print-ready PDF |
-| **🔁 Retry Logic** | Exponential backoff for Ollama API resilience |
-| **🔒 100% Local** | All processing on your machine — zero data leaves your device |
+| **Smart Ingestion** | CSV, XLSX, XLS, and Parquet with automatic schema detection |
+| **Auto Profiling** | Shape, data types, missing values, duplicates, memory usage, IQR outlier detection |
+| **NL-to-SQL** | Natural language → DuckDB SQL → execution → explanation |
+| **Visual Advisor** | Plotly charts (bar, line, scatter, histogram, heatmap, pie) with dark-mode styling |
+| **AI Chat** | Context-aware conversations with sliding-window memory |
+| **Insight Engine** | Automated trend analysis, anomaly detection, and pattern recognition |
+| **Report Export** | Markdown, styled HTML, and print-ready PDF output |
+| **Retry Logic** | Exponential backoff with configurable retries for API resilience |
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| **Runtime** | Python 3.12+, `uv` Package Manager |
-| **Frontend** | Streamlit (Custom Glassmorphic Dark Theme) |
-| **SQL Engine** | DuckDB (In-Memory) |
-| **Data Layer** | Pandas, NumPy, PyArrow |
+| **Runtime** | Python 3.12+, uv |
+| **Frontend** | Streamlit |
+| **SQL Engine** | DuckDB (in-memory) |
+| **Data** | Pandas, NumPy, PyArrow |
 | **Visualization** | Plotly Express |
-| **LLM Backend** | Ollama (REST API) |
-| **Reports** | fpdf2 (PDF), Markdown, HTML |
-| **Quality** | Pytest, Ruff, MyPy, Pre-Commit |
+| **LLM** | Ollama (local REST API) |
+| **Reports** | fpdf2, Markdown, HTML |
+| **Quality** | Pytest, Ruff, MyPy, Pre-commit |
 | **CI/CD** | GitHub Actions |
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 graph TD
-    A[Streamlit Web App] --> B[UI Layer — Glassmorphic Theme]
-    A --> C[Ollama Service — Health / Retry / Models]
-    A --> D[Data Ingestion / Profiler]
-    A --> E[SQL Engine — DuckDB]
-    A --> F[Insight Engine]
-    A --> G[Chart Generator — Plotly]
-    A --> H[Report Generator]
-    
-    C --> |Health Check / Completions| I[Local Ollama Instance]
-    D --> |Registers DataFrames| E
-    E --> |Executes Queries| J[In-Memory DuckDB Tables]
-    G --> |Returns Interactive Plots| A
-    H --> |PDF / HTML / MD| K[Local Downloads]
+    UI[Streamlit UI] -->|User Interaction| Core[Analytics Core]
+    Core -->|Query Execution| DB[DuckDB Engine]
+    Core -->|LLM Inference| LLM[Ollama]
+    Core -->|Export| Report[Report Generator]
+    DB -->|Results| Core
+    LLM -->|Completions| Core
 ```
 
 ---
 
-## 📦 Project Structure
+## Project Structure
 
-```text
+```
 ├── app/
-│   ├── main.py              # Application entrypoint & view coordinator
-│   ├── ui/                  # Custom CSS, HTML components, KPI widgets
-│   │   ├── styles.py        # Premium glassmorphic design system
-│   │   └── components.py    # Reusable UI components
-│   ├── services/            # Ollama service (health, retry, models)
-│   │   └── ollama_service.py
-│   ├── llm/                 # Chat engine with sliding-window memory
-│   │   └── chat_engine.py
-│   ├── analytics/           # Profiler, DuckDB SQL engine, insights
-│   │   ├── profiler.py
-│   │   ├── sql_engine.py
-│   │   └── insight_engine.py
-│   ├── charts/              # Plotly chart generator & advisor
-│   │   └── chart_generator.py
-│   └── reports/             # Multi-format report exporter
-│       └── report_generator.py
-├── tests/                   # 29 pytest unit tests
-├── docs/                    # Architecture, setup, deployment guides
-├── assets/                  # Screenshots and media
-├── .github/workflows/       # CI pipeline (Ruff, MyPy, Pytest)
-├── .streamlit/config.toml   # Framework-level theme configuration
-├── pyproject.toml           # Project metadata & tool config
-├── uv.lock                  # Dependency lockfile
-├── CHANGELOG.md             # Version history
-├── SECURITY.md              # Security policy
-├── LICENSE                  # MIT License
-└── .env.example             # Environment variable template
+│   ├── main.py                # Entrypoint & view coordinator
+│   ├── ui/
+│   │   ├── styles.py          # Custom theme & CSS
+│   │   └── components.py      # Reusable UI components
+│   ├── services/
+│   │   └── ollama_service.py  # Ollama client with health checks & retry
+│   ├── llm/
+│   │   └── chat_engine.py     # Chat engine with sliding-window memory
+│   ├── analytics/
+│   │   ├── profiler.py        # Dataset profiler
+│   │   ├── sql_engine.py      # DuckDB query engine
+│   │   └── insight_engine.py  # Automated insight generation
+│   ├── charts/
+│   │   └── chart_generator.py # Plotly chart builder
+│   └── reports/
+│       └── report_generator.py # PDF/HTML/MD export
+├── tests/                      # Unit tests (29 tests)
+├── docs/                       # Documentation
+├── .github/workflows/          # CI pipeline
+├── pyproject.toml              # Project config
+└── uv.lock                    # Dependency lockfile
 ```
 
 ---
 
-## ⚡ Quick Start
+## Getting Started
 
 ### Prerequisites
 
 - [Python 3.12+](https://www.python.org/)
-- [Ollama](https://ollama.com/) installed and accessible
-- [`uv`](https://docs.astral.sh/uv/) package manager
+- [Ollama](https://ollama.com/)
+- [uv](https://docs.astral.sh/uv/)
 
-### 1. Install `uv`
+### Setup
 
 ```bash
-# Windows (PowerShell)
+# Install uv (if not installed)
+# Windows
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-
 # macOS / Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
-```
 
-### 2. Pull a local LLM
+# Pull a model
+ollama pull llama3.2
 
-```bash
-ollama pull qwen2.5-coder:7b
-```
-
-### 3. Clone & Run
-
-```bash
+# Clone & run
 git clone https://github.com/Krishna-Meena/LLM-Driven-Data-Analyst-Assistant.git
 cd LLM-Driven-Data-Analyst-Assistant
-
-# Install dependencies
 uv sync
-
-# Copy environment template
 cp .env.example .env
-
-# Launch the dashboard
 uv run streamlit run app/main.py
 ```
 
-The app will open at `http://localhost:8501`.
+The app opens at `http://localhost:8501`.
 
 ---
 
-## 🧪 Testing & Quality
+## Development
 
 ```bash
 # Lint & format
 uv run ruff check .
 uv run ruff format .
 
-# Type checking
+# Type check
 uv run mypy app tests
 
-# Run all 29 unit tests
+# Run tests
 uv run pytest tests/
 ```
 
-All checks run automatically on push via GitHub Actions CI.
+All checks run automatically via GitHub Actions on every push.
 
 ---
 
-## 🔐 Security
+## Security
 
-- **No data leaves your machine** — all LLM inference is local via Ollama
-- **No secrets in code** — configuration via `.env` (excluded from git)
-- **Dependency locking** — `uv.lock` ensures reproducible builds
-- See [SECURITY.md](SECURITY.md) for the full security policy
-
----
-
-## 🌟 Resume Bullet Points
-
-> *Copy these directly to your resume or portfolio:*
-
-- **AI Analytics Engineer**: Engineered an in-memory SQL data analyst pipeline using **Streamlit**, **DuckDB**, and **Pandas**, enabling instant natural language analytics on multi-format datasets (CSV, Excel, Parquet).
-- **LLM Integration**: Integrated local LLMs (**Ollama/Qwen2.5-Coder**) with custom REST API wrappers, exponential backoff retry logic, and automatic health management — achieving 100% data privacy with zero inference costs.
-- **Data Engineering**: Built an automated **Data Profiler** and **Insight Engine** that generates dataset metadata, IQR outliers, trend analysis, and exports executive briefings to custom A4 PDFs via **fpdf2**.
-- **Software Engineering**: Established a robust testing framework with **29 pytest unit tests** (mocking LLM services), strict **MyPy** type checking, **Ruff** linting, and a **GitHub Actions CI Pipeline**.
-- **UI/UX Design**: Designed a premium **glassmorphic dark theme** with animated gradients, micro-interactions, and responsive layouts using custom CSS in Streamlit.
+- All LLM inference runs locally — no data leaves your machine
+- Configuration via `.env` (git-ignored)
+- Reproducible builds via `uv.lock`
+- See [SECURITY.md](SECURITY.md) for details
 
 ---
 
-## 🔮 Future Roadmap
+## Roadmap
 
-- 💾 **RAG Pipeline**: Add ChromaDB for retrieval-augmented generation over metadata
-- 🔌 **Database Connectors**: PostgreSQL, SQLite, Snowflake integrations
-- 📊 **Dashboard Templates**: Pre-built analytical dashboards for common domains
-- 🚀 **Multi-GPU**: Load balancing across multiple Ollama instances
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+- RAG pipeline with ChromaDB for metadata-augmented generation
+- Database connectors (PostgreSQL, SQLite, Snowflake)
+- Pre-built dashboard templates for common analytical domains
+- Multi-instance Ollama load balancing
 
 ---
 
-## 👤 Author
+## License
 
-- **Krishna Meena** — *Data Scientist & AI Engineer* — [GitHub](https://github.com/Krishna-Meena)
+MIT — see [LICENSE](LICENSE).
+
+---
+
+**Krishna Meena** · [GitHub](https://github.com/Krishna-Meena)

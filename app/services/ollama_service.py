@@ -7,6 +7,7 @@ requests with retry logic and exponential backoff.
 import os
 import subprocess
 import time
+from collections.abc import Callable
 from typing import Any
 
 import requests
@@ -152,7 +153,7 @@ class OllamaService:
 
     def _retry_request(
         self,
-        request_fn: Any,
+        request_fn: Callable[[], requests.Response],
         max_retries: int = MAX_RETRIES,
     ) -> requests.Response:
         """Executes an HTTP request with exponential backoff retry logic.
