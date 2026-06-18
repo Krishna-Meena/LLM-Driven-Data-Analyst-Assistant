@@ -1,0 +1,49 @@
+# Python virtual environment
+.venv/
+venv/
+ENV/
+
+# Python cache and temporary files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Build and distribution files
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing and Coverage
+htmlcov/
+.coverage
+coverage.xml
+.tox/
+
+# Local logs and temporary data files
+logs/
+*.log
+data/
+local_datasets/
+generated_reports/
+ollama_stdout.log
+ollama_stderr.log
+
+# Streamlit config/cache (unless explicitly shared)
+.streamlit/
