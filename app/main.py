@@ -1,7 +1,15 @@
+# ruff: noqa: E402
 """Main Streamlit application entry point for the Local LLM Data Analyst."""
 
 import os
+import sys
 import tempfile
+from pathlib import Path
+
+# Add project root to sys.path to enable absolute imports from 'app' package
+root_dir = Path(__file__).resolve().parent.parent
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
 
 import pandas as pd
 import streamlit as st
