@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![CI Pipeline](https://github.com/yourusername/local-llm-data-analyst/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/local-llm-data-analyst/actions)
+[![CI Pipeline](https://github.com/Krishna-Meena/LLM-Driven-Data-Analyst-Assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Krishna-Meena/LLM-Driven-Data-Analyst-Assistant/actions)
 [![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
 [![Linting & Formatting](https://img.shields.io/badge/code%20quality-Ruff-orange.svg)](https://github.com/astral-sh/ruff)
 [![Type Checked](https://img.shields.io/badge/type%20checked-MyPy-green.svg)](https://github.com/python/mypy)
@@ -160,8 +160,8 @@ ollama pull qwen2.5-coder:7b
 ### 3. Clone & Run
 
 ```bash
-git clone https://github.com/yourusername/local-llm-data-analyst.git
-cd local-llm-data-analyst
+git clone https://github.com/Krishna-Meena/LLM-Driven-Data-Analyst-Assistant.git
+cd LLM-Driven-Data-Analyst-Assistant
 
 # Install dependencies
 uv sync
@@ -233,4 +233,4 @@ This project is licensed under the MIT License — see [LICENSE](LICENSE) for de
 
 ## 👤 Author
 
-- **Your Name** — *Data Scientist & AI Engineer* — [GitHub](https://github.com/yourusername)
+- **Krishna Meena** — *Data Scientist & AI Engineer* — [GitHub](https://github.com/Krishna-Meena)
