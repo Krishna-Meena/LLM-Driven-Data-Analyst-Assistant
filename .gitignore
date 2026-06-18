@@ -45,5 +45,12 @@ generated_reports/
 ollama_stdout.log
 ollama_stderr.log
 
-# Streamlit config/cache (unless explicitly shared)
-.streamlit/
+# Environment secrets
+.env
+
+# Agent config
+.agents/
+
+# Streamlit cache (config.toml is committed)
+.streamlit/cache/
+.streamlit/credentials.toml

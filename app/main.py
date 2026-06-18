@@ -21,7 +21,12 @@ from app.charts.chart_generator import ChartGenerator
 from app.llm.chat_engine import ChatEngine
 from app.reports.report_generator import ReportGenerator
 from app.services.ollama_service import OllamaService
-from app.ui.components import kpi_card, section_header, status_indicator
+from app.ui.components import (
+    kpi_card,
+    section_header,
+    status_indicator,
+    welcome_feature_grid,
+)
 from app.ui.styles import get_custom_css
 
 # Page Configuration
@@ -81,9 +86,13 @@ with st.sidebar:
         '<div class="app-title">📊 Local Analyst</div>',
         unsafe_allow_html=True,
     )
+    st.markdown(
+        '<div class="version-badge">v0.1.0 • Local LLM</div>',
+        unsafe_allow_html=True,
+    )
 
     # Health Indicator
-    status_indicator(ollama_active, "Ollama Server Status")
+    status_indicator(ollama_active, "Ollama Server")
 
     # Available Models Selector
     available_models: list[str] = []
@@ -165,28 +174,50 @@ with st.sidebar:
 # Welcome view if no dataset is loaded
 if st.session_state.df is None:
     st.markdown(
-        '<div class="app-title">📊 Local LLM Data Analyst</div>',
+        '<div class="hero-title">Local LLM Data Analyst</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
         """
-        <div class="glass-card" style="padding: 30px;">
-            <h3>Welcome to your Local Data Analyst Hub</h3>
-            <p style="color: #94A3B8; font-size: 1.1rem; line-height: 1.6;">
-                This workspace allows you to ingestion datasets, profile them,
-                write natural language queries to execute standard SQL,
-                create interactive charts, and automatically compile
-                executive summaries—all running 100% locally on your computer
-                without sending your data to external APIs.
-            </p>
-            <h4 style="margin-top: 25px;">To get started:</h4>
-            <ol style="color: #E2E8F0; padding-left: 20px;">
-                <li style="margin-bottom: 8px;">Ensure <strong>Ollama</strong>
-                    is running locally.</li>
-                <li style="margin-bottom: 8px;">Upload a <strong>CSV, Excel,
-                    or Parquet</strong> file using the sidebar.</li>
-                <li style="margin-bottom: 8px;">Navigate through the analytics
-                    studio using the sidebar links.</li>
+        <div class="hero-subtitle">
+            Your private, AI-powered data analysis workspace.
+            Upload datasets, run natural language queries, generate interactive
+            charts, and compile executive reports — all running 100% locally
+            on your machine.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    welcome_feature_grid()
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="glass-card" style="
+            border-left: 3px solid #7C3AED !important;
+            padding: 20px 24px !important;
+        ">
+            <div style="
+                font-family: 'Outfit', sans-serif;
+                font-weight: 600;
+                font-size: 1rem;
+                color: #F1F5F9;
+                margin-bottom: 10px;
+            ">Quick Start</div>
+            <ol style="
+                color: #CBD5E1;
+                padding-left: 20px;
+                margin: 0;
+                line-height: 2;
+                font-size: 0.9rem;
+            ">
+                <li>Ensure <strong style="color: #7C3AED;">Ollama</strong>
+                    is running locally</li>
+                <li>Upload a <strong style="color: #06B6D4;">CSV, Excel,
+                    or Parquet</strong> file using the sidebar</li>
+                <li>Navigate the analytics studio with the sidebar menu</li>
             </ol>
         </div>
         """,
@@ -202,22 +233,22 @@ else:
     if nav_option == "📊 Data Profile":
         section_header(
             "Data Profiling & Metadata",
-            f"Detailed structural summary of '{st.session_state.filename}'",
+            f"Structural summary of '{st.session_state.filename}'",
         )
 
         # KPI Metrics Row
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4 = st.columns(4, gap="medium")
         with col1:
-            kpi_card("Total Rows", f"{profile.num_rows:,}")
+            kpi_card("Total Rows", f"{profile.num_rows:,}", "📋")
         with col2:
-            kpi_card("Total Columns", f"{profile.num_cols:,}")
+            kpi_card("Total Columns", f"{profile.num_cols:,}", "📐")
         with col3:
-            kpi_card("Duplicate Rows", f"{profile.duplicate_rows:,}")
+            kpi_card("Duplicate Rows", f"{profile.duplicate_rows:,}", "🔁")
         with col4:
-            kpi_card("Memory Size", profile.memory_usage_str)
+            kpi_card("Memory Size", profile.memory_usage_str, "💾")
 
         # Column profile details
-        st.markdown("### Columns & Types Summary")
+        st.markdown("### Column Schema & Types")
 
         schema_rows = []
         for col_name, col_prof in profile.column_profiles.items():
@@ -239,17 +270,17 @@ else:
                     "Outliers (IQR)": outliers,
                 }
             )
-        st.dataframe(pd.DataFrame(schema_rows), use_container_width=True)
+        st.dataframe(pd.DataFrame(schema_rows), width="stretch")
 
         # Preview Data
         st.markdown("### Raw Dataset Preview (Top 20 rows)")
-        st.dataframe(df.head(20), use_container_width=True)
+        st.dataframe(df.head(20), width="stretch")
 
     # --- VIEW 2: SQL ANALYTICS STUDIO ---
     elif nav_option == "🔍 SQL Analytics Studio":
         section_header(
             "SQL Analytics Studio",
-            "Ask questions in plain English, translate to SQL, and execute in DuckDB",
+            "Ask questions in plain English — translates to SQL, executes in DuckDB",
         )
 
         # SQL Input
@@ -283,7 +314,7 @@ else:
                             res_df = sql_engine.execute_query(generated_sql)
 
                         st.markdown("### Query Results")
-                        st.dataframe(res_df, use_container_width=True)
+                        st.dataframe(res_df, width="stretch")
 
                         # Explain findings
                         with st.spinner("Analyzing results..."):
@@ -297,14 +328,14 @@ else:
                             unsafe_allow_html=True,
                         )
 
-                        # Attempt to auto-generate chart of results if
+                        # Auto-generate chart of results if
                         # numeric columns exist
                         if len(res_df) > 0 and "chart_generator" in st.session_state:
                             chart_gen = st.session_state.chart_generator
                             fig = chart_gen.auto_generate_chart(res_df)
                             if fig is not None:
                                 st.markdown("### Interactive Visualizations")
-                                st.plotly_chart(fig, use_container_width=True)
+                                st.plotly_chart(fig, width="stretch")
 
                     except Exception as e:
                         st.error(f"Execution Error: {e}")
@@ -331,14 +362,14 @@ else:
                 content = msg["content"]
                 if role == "user":
                     user_msg_html = (
-                        f'<div class="chat-msg-user"><strong>You:</strong>'
+                        f'<div class="chat-msg-user"><strong>You</strong>'
                         f"<br>{content}</div>"
                     )
                     st.markdown(user_msg_html, unsafe_allow_html=True)
                 elif role == "assistant":
                     asst_msg_html = (
                         '<div class="chat-msg-assistant">'
-                        f"<strong>Assistant:</strong><br>{content}</div>"
+                        f"<strong>Assistant</strong><br>{content}</div>"
                     )
                     st.markdown(asst_msg_html, unsafe_allow_html=True)
 
@@ -402,13 +433,13 @@ else:
             # Executive Summary card
             st.markdown("### Executive Summary")
             summary_html = (
-                '<div class="glass-card" style="font-size: 1.15rem; '
-                f'line-height: 1.7;">{insights.executive_summary}</div>'
+                '<div class="glass-card" style="font-size: 1.05rem; '
+                f'line-height: 1.75;">{insights.executive_summary}</div>'
             )
             st.markdown(summary_html, unsafe_allow_html=True)
 
             # Columns layout for lists
-            col1, col2 = st.columns(2)
+            col1, col2 = st.columns(2, gap="medium")
             with col1:
                 st.markdown("### 📈 Key Trends")
                 trends_html = "".join(f"<li>{t}</li>" for t in insights.trends)
@@ -436,7 +467,7 @@ else:
                 recs_html = "".join(f"<li>{r}</li>" for r in insights.recommendations)
                 card_style = (
                     '<div class="glass-card" style="border-left: '
-                    '4px solid #10B981 !important;">'
+                    '3px solid #10B981 !important;">'
                 )
                 st.markdown(
                     f"{card_style}<ul>{recs_html}</ul></div>",
@@ -460,14 +491,14 @@ else:
                     pdf_bytes = f.read()
 
             # Renders Download Buttons in row
-            down_col1, down_col2, down_col3 = st.columns(3)
+            down_col1, down_col2, down_col3 = st.columns(3, gap="medium")
             with down_col1:
                 st.download_button(
                     label="📥 Download PDF Report",
                     data=pdf_bytes,
                     file_name="executive_report.pdf",
                     mime="application/pdf",
-                    use_container_width=True,
+                    width="stretch",
                 )
             with down_col2:
                 st.download_button(
@@ -475,7 +506,7 @@ else:
                     data=html_content,
                     file_name="executive_report.html",
                     mime="text/html",
-                    use_container_width=True,
+                    width="stretch",
                 )
             with down_col3:
                 st.download_button(
@@ -483,5 +514,5 @@ else:
                     data=md_content,
                     file_name="executive_report.md",
                     mime="text/markdown",
-                    use_container_width=True,
+                    width="stretch",
                 )

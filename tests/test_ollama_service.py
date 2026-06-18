@@ -22,7 +22,7 @@ def test_is_healthy_success(service: OllamaService) -> None:
         mock_get.return_value = mock_response
 
         assert service.is_healthy() is True
-        mock_get.assert_called_once_with("http://127.0.0.1:11434/api/tags", timeout=2)
+        mock_get.assert_called_once_with("http://127.0.0.1:11434/api/tags", timeout=3)
 
 
 def test_is_healthy_failure(service: OllamaService) -> None:

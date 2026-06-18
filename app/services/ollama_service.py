@@ -1,4 +1,8 @@
-"""Service layer for interacting with local Ollama LLM models."""
+"""Service layer for interacting with local Ollama LLM models.
+
+Provides health checks, auto-start, model listing, and completion
+requests with retry logic and exponential backoff.
+"""
 
 import os
 import subprocess
@@ -12,6 +16,11 @@ from app.utils.logger import setup_logger
 logger = setup_logger("ollama_service")
 
 DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434"
+
+# Retry configuration
+MAX_RETRIES = 3
+INITIAL_BACKOFF_SECONDS = 1.0
+BACKOFF_MULTIPLIER = 2.0
 
 
 class OllamaService:
@@ -32,7 +41,7 @@ class OllamaService:
             True if the server responded with HTTP status 200, False otherwise.
         """
         try:
-            response = requests.get(f"{self.base_url}/api/tags", timeout=2)
+            response = requests.get(f"{self.base_url}/api/tags", timeout=3)
             return response.status_code == 200
         except requests.RequestException:
             return False
@@ -98,14 +107,14 @@ class OllamaService:
             logger.error("Could not find or run the Ollama executable on this system.")
             return False
 
-        # Poll health endpoint for up to 10 seconds
+        # Poll health endpoint for up to 15 seconds
         logger.info("Waiting for Ollama server to initialize...")
-        for attempt in range(10):
+        for attempt in range(15):
             time.sleep(1)
             if self.is_healthy():
                 logger.info("Ollama server started successfully and is responsive.")
                 return True
-            logger.debug(f"Ping attempt {attempt + 1}/10 failed...")
+            logger.debug(f"Ping attempt {attempt + 1}/15 failed...")
 
         logger.error(
             "Ollama server failed to become healthy within the timeout period."
@@ -119,7 +128,7 @@ class OllamaService:
             A list of model name strings (e.g. ['qwen2.5-coder:7b']).
         """
         try:
-            response = requests.get(f"{self.base_url}/api/tags", timeout=3)
+            response = requests.get(f"{self.base_url}/api/tags", timeout=5)
             if response.status_code == 200:
                 data = response.json()
                 models = [model["name"] for model in data.get("models", [])]
@@ -129,6 +138,65 @@ class OllamaService:
             logger.error(f"Failed to fetch local Ollama models: {e}")
             return []
 
+    def validate_model(self, model_name: str) -> bool:
+        """Checks if a specific model is available in the local Ollama instance.
+
+        Args:
+            model_name: Name of the model to validate.
+
+        Returns:
+            True if the model exists locally, False otherwise.
+        """
+        available = self.get_available_models()
+        return model_name in available
+
+    def _retry_request(
+        self,
+        request_fn: Any,
+        max_retries: int = MAX_RETRIES,
+    ) -> requests.Response:
+        """Executes an HTTP request with exponential backoff retry logic.
+
+        Args:
+            request_fn: A callable that returns a requests.Response.
+            max_retries: Maximum number of retry attempts.
+
+        Returns:
+            The successful HTTP response.
+
+        Raises:
+            RuntimeError: If all retry attempts fail.
+        """
+        last_exception: Exception | None = None
+        backoff = INITIAL_BACKOFF_SECONDS
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                response = request_fn()
+                if response.status_code == 200:
+                    return response
+                else:
+                    err_msg = (
+                        f"Ollama API returned status {response.status_code}: "
+                        f"{response.text}"
+                    )
+                    last_exception = RuntimeError(err_msg)
+                    logger.warning(f"Attempt {attempt}/{max_retries} failed: {err_msg}")
+            except requests.RequestException as e:
+                last_exception = e
+                logger.warning(f"Attempt {attempt}/{max_retries} connection error: {e}")
+
+            if attempt < max_retries:
+                logger.info(f"Retrying in {backoff:.1f}s...")
+                time.sleep(backoff)
+                backoff *= BACKOFF_MULTIPLIER
+
+        err_msg = (
+            f"All {max_retries} attempts failed for Ollama request: {last_exception}"
+        )
+        logger.error(err_msg)
+        raise RuntimeError(err_msg) from last_exception
+
     def generate_completion(
         self,
         model: str,
@@ -136,7 +204,7 @@ class OllamaService:
         system_prompt: str | None = None,
         options: dict[str, Any] | None = None,
     ) -> str:
-        """Generates a text completion based on a prompt and optional configuration.
+        """Generates a text completion with retry logic and exponential backoff.
 
         Args:
             model: The name of the model to use.
@@ -148,7 +216,7 @@ class OllamaService:
             The generated response string.
 
         Raises:
-            RuntimeError: If the request to Ollama fails.
+            RuntimeError: If the request to Ollama fails after retries.
         """
         payload: dict[str, Any] = {
             "model": model,
@@ -160,21 +228,19 @@ class OllamaService:
         if options:
             payload["options"] = options
 
-        try:
-            logger.info(f"Sending generation request to model '{model}'")
-            response = requests.post(
-                f"{self.base_url}/api/generate", json=payload, timeout=120
+        logger.info(f"Sending generation request to model '{model}'")
+
+        def _do_request() -> requests.Response:
+            return requests.post(
+                f"{self.base_url}/api/generate", json=payload, timeout=180
             )
-            if response.status_code == 200:
-                return str(response.json().get("response", ""))
-            else:
-                err_msg = (
-                    f"Ollama API returned status {response.status_code}: "
-                    f"{response.text}"
-                )
-                logger.error(err_msg)
-                raise RuntimeError(err_msg)
-        except requests.RequestException as e:
+
+        try:
+            response = self._retry_request(_do_request)
+            return str(response.json().get("response", ""))
+        except RuntimeError:
+            raise
+        except Exception as e:
             err_msg = f"Failed to connect to Ollama server at {self.base_url}: {e}"
             logger.error(err_msg)
             raise RuntimeError(err_msg) from e
@@ -185,7 +251,7 @@ class OllamaService:
         messages: list[dict[str, str]],
         options: dict[str, Any] | None = None,
     ) -> str:
-        """Generates a chat completion given a list of messages.
+        """Generates a chat completion with retry logic and exponential backoff.
 
         Args:
             model: The name of the model to use.
@@ -196,7 +262,7 @@ class OllamaService:
             The content of the assistant's reply.
 
         Raises:
-            RuntimeError: If the request to Ollama fails.
+            RuntimeError: If the request to Ollama fails after retries.
         """
         payload: dict[str, Any] = {
             "model": model,
@@ -206,24 +272,20 @@ class OllamaService:
         if options:
             payload["options"] = options
 
+        msg_count = len(messages)
+        logger.info(
+            f"Sending chat request to model '{model}' with {msg_count} messages"
+        )
+
+        def _do_request() -> requests.Response:
+            return requests.post(f"{self.base_url}/api/chat", json=payload, timeout=180)
+
         try:
-            msg_count = len(messages)
-            logger.info(
-                f"Sending chat request to model '{model}' with {msg_count} messages"
-            )
-            response = requests.post(
-                f"{self.base_url}/api/chat", json=payload, timeout=120
-            )
-            if response.status_code == 200:
-                return str(response.json().get("message", {}).get("content", ""))
-            else:
-                err_msg = (
-                    f"Ollama API returned status {response.status_code}: "
-                    f"{response.text}"
-                )
-                logger.error(err_msg)
-                raise RuntimeError(err_msg)
-        except requests.RequestException as e:
+            response = self._retry_request(_do_request)
+            return str(response.json().get("message", {}).get("content", ""))
+        except RuntimeError:
+            raise
+        except Exception as e:
             err_msg = f"Failed to connect to Ollama server at {self.base_url}: {e}"
             logger.error(err_msg)
             raise RuntimeError(err_msg) from e
